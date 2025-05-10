@@ -36,7 +36,7 @@ playlistName: string, tracks: Track[], token: string, newPlaylistDescription: st
         },
         body: JSON.stringify({
           name: playlistName,
-          description: 'Created by MusicBridge',
+          description: newPlaylistDescription || 'Created by MusicBridge',
           public: false,
         }),
       });

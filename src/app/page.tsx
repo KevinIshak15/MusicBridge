@@ -63,11 +63,24 @@ export default function Page() {
       }
     } else if (service === 'apple') {
       const appleToken = localStorage.getItem('apple_user_token');
-      if (appleToken) {
-        setToken(appleToken);
+      if (!appleToken) {
+        // If no token is found, redirect back to home
+        router.push('/home');
+        return;
       }
+
+      // Verify the token is still valid
+      const music = window.MusicKit.getInstance();
+      music.authorize().then(() => {
+        setToken(appleToken);
+      }).catch((error) => {
+        console.error('[MusicBridge] Token validation failed:', error);
+        // If token is invalid, clear it and redirect to home
+        localStorage.removeItem('apple_user_token');
+        router.push('/home');
+      });
     }
-  }, [service]);
+  }, [service, router]);
 
   useEffect(() => {
     if (!token || !service) return;
@@ -154,7 +167,11 @@ export default function Page() {
 
     let result;
     if (service === 'spotify') {
-      result = await transferToAppleMusic(selectedPlaylist.name, selectedTrackObjects);
+      result = await transferToAppleMusic(
+        selectedPlaylist.name,
+        selectedTrackObjects,
+        newPlaylistDescription
+      );
     } else if (service === 'apple') {
       const getFreshToken = () => {
         const match = document.cookie.match(/spotify_access_token=([^;]+)/);

@@ -9,7 +9,8 @@ export type Track = {
   
   export async function transferToAppleMusic(
     playlistName: string,
-    tracks: Track[]
+    tracks: Track[],
+    newPlaylistDescription?: string
   ): Promise<{ success: boolean; message: string }> {
     try {
       const music = window.MusicKit.getInstance();
@@ -48,7 +49,7 @@ export type Track = {
         body: JSON.stringify({
           attributes: {
             name: playlistName,
-            description: 'Created by MusicBridge',
+            description: newPlaylistDescription || 'Created by MusicBridge',
           },
           relationships: {
             tracks: {
