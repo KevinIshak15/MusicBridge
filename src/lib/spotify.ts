@@ -5,6 +5,21 @@ export type Track = {
     albumArt: string;
   };
   
+  // Define a type for Spotify API track item data from the getPlaylistTracks response
+  interface SpotifyApiTrackItem {
+    track: {
+      id: string;
+      name: string;
+      artists: { name: string }[];
+      album: {
+        images: { url: string }[];
+        // other album properties
+      };
+      // other track properties
+    };
+    // other item properties
+  }
+  
   export async function transferToSpotify(
 playlistName: string, tracks: Track[], token: string, newPlaylistDescription: string  ): Promise<{ success: boolean; message: string }> {
     try {
@@ -87,11 +102,12 @@ playlistName: string, tracks: Track[], token: string, newPlaylistDescription: st
         success: true,
         message: `Transferred ${uris.length} track(s) to your new Spotify playlist.`,
       };
-    } catch (err: any) {
-      console.error('[MusicBridge] Error transferring to Spotify:', err);
+    } catch (error: unknown) {
+      console.error('[MusicBridge] Error transferring to Spotify:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred during Spotify transfer.';
       return {
         success: false,
-        message: err.message || 'An error occurred during Spotify transfer.',
+        message: errorMessage,
       };
     }
   }
@@ -124,7 +140,7 @@ playlistName: string, tracks: Track[], token: string, newPlaylistDescription: st
   
     const data = await res.json();
   
-    return data.items.map((item: any) => ({
+    return data.items.map((item: SpotifyApiTrackItem) => ({
       id: item.track.id,
       name: item.track.name,
       artist: item.track.artists[0]?.name,

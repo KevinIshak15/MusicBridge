@@ -24,8 +24,9 @@ export default function AuthForm() {
         toast.success('Account created!');
       }
       router.push('/home');
-    } catch (err: any) {
-      toast.error(err.message || 'Authentication failed');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+      toast.error(errorMessage);
     }
   };
 

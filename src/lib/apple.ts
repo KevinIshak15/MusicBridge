@@ -7,6 +7,23 @@ export type Track = {
     albumArt: string;
   };
   
+  // Define a type for Apple Music playlist data from the API response
+  interface AppleMusicApiPlaylist {
+    id: string;
+    type: string; // e.g., 'playlists'
+    attributes?: {
+      name?: string;
+      artwork?: {
+        url: string;
+        width: number;
+        height: number;
+        // other properties might exist
+      };
+      // other attributes might exist
+    };
+    // other properties might exist
+  }
+  
   export async function transferToAppleMusic(
     playlistName: string,
     tracks: Track[],
@@ -68,11 +85,12 @@ export type Track = {
         success: true,
         message: `Playlist "${playlistName}" created in Apple Music with ${appleTrackIds.length} track(s)!`,
       };
-    } catch (err: any) {
-      console.error('[MusicBridge] Error transferring to Apple Music:', err);
+    } catch (error: unknown) {
+      console.error('[MusicBridge] Error transferring to Apple Music:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred during transfer.';
       return {
         success: false,
-        message: err.message || 'An error occurred during transfer.',
+        message: errorMessage,
       };
     }
   }
@@ -104,12 +122,18 @@ type Playlist = {
     const response = await music.api.library.playlists();
     console.log('[MusicBridge] Raw Apple playlists:', response);
   
-    if (!Array.isArray(response)) {
-      console.warn('[MusicBridge] Unexpected Apple playlist structure');
+    // The Apple Music API response for playlists is often an array of playlist objects directly.
+    // However, the MusicKit JS library might wrap it. Let's assume `response` is the array or has a data property that is the array.
+    // Based on the usage below (`response.map`), it seems `response` itself might be the array or an object with a `data` array.
+    // Let's add a check for the `data` property if response is not an array.
+    const playlistData = Array.isArray(response) ? response : (response as any).data; // Add temporary any cast here to access data if needed
+
+    if (!Array.isArray(playlistData)) {
+      console.warn('[MusicBridge] Unexpected Apple playlist structure:', response);
       return [];
     }
   
-    const mapped = response.map((item: any) => {
+    const mapped = playlistData.map((item: AppleMusicApiPlaylist) => { // Use the new interface
       const name = item.attributes?.name || 'Untitled';
       const artworkUrl = item.attributes?.artwork?.url
         ?.replace('{w}', '300')

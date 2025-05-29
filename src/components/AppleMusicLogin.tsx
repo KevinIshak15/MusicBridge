@@ -1,13 +1,11 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useMusicKit } from '@/lib/useMusicKit';
 import { FaApple } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 
 export default function AppleMusicLogin() {
   const music = useMusicKit();
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
 

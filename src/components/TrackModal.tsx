@@ -105,7 +105,7 @@ export default function TrackModal({
                 placeholder="Optional description"
                 rows={3}
               />
-              <p className="mt-1 text-sm text-gray-500">If left empty, description will be "Created by MusicBridge"</p>
+              <p className="mt-1 text-sm text-gray-500">If left empty, description will be &quot;Created by MusicBridge&quot;</p>
             </div>
 
           <div className="flex items-center justify-between mb-4">

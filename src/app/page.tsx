@@ -105,7 +105,7 @@ export default function Page() {
       const music = window.MusicKit.getInstance();
       music.authorize().then(() => {
         setToken(appleToken);
-      }).catch((error: any) => {
+      }).catch((error: unknown) => {
         console.error('[MusicBridge] Token validation failed:', error);
         // If token is invalid, clear it and redirect to home
         localStorage.removeItem('apple_user_token');
@@ -226,8 +226,8 @@ export default function Page() {
         setSelectedTrackIds(new Set(fetchedTracks.map((t: Track) => t.id)));
       }
       setShowModal(true);
-    } catch (err: any) { // Keep any for now in catch block, will address later
-      console.error(err);
+    } catch (error: unknown) {
+      console.error('Error selecting playlist:', error);
       setTracks([]);
     }
     setIsLoadingTracks(false);

@@ -6,8 +6,6 @@ import { useAuthRedirect } from '@/lib/useAuthRedirect';
 import AppleMusicLogin from '@/components/AppleMusicLogin';
 import { FaSpotify } from 'react-icons/fa';
 import { SiApplemusic } from 'react-icons/si';
-import { auth } from '@/lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
 import Navbar from '@/components/Navbar';
 
 export default function Home() {

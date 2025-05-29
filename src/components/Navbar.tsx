@@ -1,23 +1,22 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { LogOut, User, History } from 'lucide-react';
+import { User, History } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthRedirect } from '@/lib/useAuthRedirect';
 import { auth } from '@/lib/firebase';
-import { signOut, onAuthStateChanged } from 'firebase/auth';
 import TransferHistoryModal from '@/components/TransferHistoryModal';
 import { useTransferHistory } from '@/context/TransferHistoryContext';
 
 export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { user, loading } = useAuthRedirect();
+  const { user } = useAuthRedirect();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
-  const { transferHistory, refreshHistory, isLoadingHistory } = useTransferHistory();
+  const { transferHistory } = useTransferHistory();
 
   const router = useRouter();
 

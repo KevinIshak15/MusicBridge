@@ -2,14 +2,30 @@
 
 import { useEffect, useState } from 'react';
 
+// Define a basic interface for the parts of MusicKit we use
+interface BasicMusicKit {
+  configure: (options: object) => void;
+  getInstance: () => any; // getInstance might return a complex object, keep any for now or define further
+  api: {
+    library: {
+      playlists: () => Promise<any>; // Define playlist response type later
+      playlist: (id: string) => Promise<any>; // Define playlist details response type later
+      // other library methods used
+    };
+    // other api methods used
+  };
+  unauthorize: () => void;
+  authorize: () => Promise<string>; // authorize returns a token string
+}
+
 declare global {
   interface Window {
-    MusicKit: any;
+    MusicKit: BasicMusicKit; // Use the basic interface
   }
 }
 
 export function useMusicKit() {
-  const [music, setMusic] = useState<any>(null);
+  const [music, setMusic] = useState<BasicMusicKit | null>(null); // Use the basic interface or null
 
   useEffect(() => {
     const developerToken = process.env.NEXT_PUBLIC_APPLE_MUSIC_TOKEN;
@@ -20,14 +36,15 @@ export function useMusicKit() {
     }
 
     const configure = () => {
-      window.MusicKit.configure({
+      // Type assertion for window.MusicKit to ensure it matches our interface
+      (window.MusicKit as BasicMusicKit).configure({
         developerToken,
         app: {
           name: 'MusicBridge',
           build: '1.0.0',
         },
       });
-      setMusic(window.MusicKit.getInstance());
+      setMusic((window.MusicKit as BasicMusicKit).getInstance());
     };
 
     if (window.MusicKit) {
