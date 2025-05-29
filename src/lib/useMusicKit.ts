@@ -8,8 +8,8 @@ interface BasicMusicKit {
   getInstance: () => BasicMusicKit; // Use BasicMusicKit as return type
   api: {
     library: {
-      playlists: () => Promise<AppleMusicApiPlaylist[] | any>; // Refined return type
-      playlist: (id: string) => Promise<{ data: AppleMusicApiTrack[] } | any>; // Refined return type
+      playlists: () => Promise<AppleMusicApiPlaylist[]>; // Removed | any
+      playlist: (id: string) => Promise<{ data: AppleMusicApiTrack[] }>; // Removed | any
       // other library methods used
     };
     // other api methods used
