@@ -5,11 +5,11 @@ import { useEffect, useState } from 'react';
 // Define a basic interface for the parts of MusicKit we use
 interface BasicMusicKit {
   configure: (options: object) => void;
-  getInstance: () => any; // getInstance might return a complex object, keep any for now or define further
+  getInstance: () => BasicMusicKit; // Use BasicMusicKit as return type
   api: {
     library: {
-      playlists: () => Promise<any>; // Define playlist response type later
-      playlist: (id: string) => Promise<any>; // Define playlist details response type later
+      playlists: () => Promise<AppleMusicApiPlaylist[] | any>; // Refined return type
+      playlist: (id: string) => Promise<{ data: AppleMusicApiTrack[] } | any>; // Refined return type
       // other library methods used
     };
     // other api methods used

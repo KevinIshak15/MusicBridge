@@ -126,7 +126,7 @@ type Playlist = {
     // However, the MusicKit JS library might wrap it. Let's assume `response` is the array or has a data property that is the array.
     // Based on the usage below (`response.map`), it seems `response` itself might be the array or an object with a `data` array.
     // Let's add a check for the `data` property if response is not an array.
-    const playlistData = Array.isArray(response) ? response : (response as any).data; // Add temporary any cast here to access data if needed
+    const playlistData = Array.isArray(response) ? response : (response as { data: AppleMusicApiPlaylist[] }).data; // Refined type assertion
 
     if (!Array.isArray(playlistData)) {
       console.warn('[MusicBridge] Unexpected Apple playlist structure:', response);

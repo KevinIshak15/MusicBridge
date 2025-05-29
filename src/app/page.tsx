@@ -181,8 +181,8 @@ export default function Page() {
           // We set a default name here, as detailed profile fetching is less common
           setUserName('Your Library');
         }
-      } catch (err: any) { // Keep any for now, will address all any later
-        console.error('Error fetching user profile:', err);
+      } catch (error: unknown) {
+        console.error('Error fetching user profile:', error);
         // If there was an error, set a default or error name based on service
         if (service === 'spotify') {
            setUserName('Spotify User');
@@ -236,7 +236,11 @@ export default function Page() {
   const handleToggleTrack = (id: string) => {
     setSelectedTrackIds((prev) => {
       const updated = new Set(prev);
-      updated.has(id) ? updated.delete(id) : updated.add(id);
+      if (updated.has(id)) {
+        updated.delete(id);
+      } else {
+        updated.add(id);
+      }
       return updated;
     });
   };
