@@ -1,30 +1,34 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { LogOut, User } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { LogOut, User, History } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthRedirect } from '@/lib/useAuthRedirect';
 import { auth } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
+import { signOut, onAuthStateChanged } from 'firebase/auth';
+import TransferHistoryModal from '@/components/TransferHistoryModal';
+import { useTransferHistory } from '@/context/TransferHistoryContext';
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { user, loading } = useAuthRedirect();
-  const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
-  // Handle mounting state
+  const { transferHistory, refreshHistory, isLoadingHistory } = useTransferHistory();
+
+  const router = useRouter();
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setOpen(false);
+        setDropdownOpen(false);
       }
     };
 
@@ -35,27 +39,21 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    try {
-      // Close the dropdown menu
-      setOpen(false);
-      
-      // Sign out from Firebase
-      await signOut(auth);
-      
-      // Clear any existing music service tokens
-      document.cookie =
-        'spotify_access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      localStorage.removeItem('apple_user_token');
-      localStorage.removeItem('musicbridge_service');
-      
-      // Redirect to login page
-      router.push('/login');
-    } catch (error) {
-      console.error('Error signing out:', error);
-      // Still redirect to login page even if there's an error
-      router.push('/login');
+    const user = auth.currentUser;
+    if (user) {
+      // Clear history from Firestore before logging out
+      // This will be handled by the context's cleanup if needed, or can be triggered manually if we add a context function for it.
+      // For now, let's rely on the context updating after auth state changes.
+      // await clearTransferHistory(user.uid);
     }
+    auth.signOut();
+    localStorage.clear(); // Clear all local storage items
+    router.push('/'); // Redirect to home page after logout
   };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center shadow-sm">
@@ -65,37 +63,69 @@ export default function Navbar() {
         </h1>
       </Link>
 
-      <div className="relative" ref={dropdownRef}>
+      <div className="flex items-center gap-4">
         <button
-          onClick={() => setOpen(!open)}
-          className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+          onClick={() => setShowHistoryModal(true)}
+          className="p-2 text-gray-600 hover:text-gray-900 rounded-full hover:bg-gray-100"
+          title="Transfer History"
         >
-          {mounted && user?.photoURL ? (
-            <img
-              src={user.photoURL}
-              alt={user.displayName || user.email || 'User'}
-              className="w-6 h-6 rounded-full object-cover"
-            />
-          ) : (
-            <User className="w-5 h-5 text-gray-700 dark:text-gray-200" />
-          )}
+          <History size={20} />
         </button>
 
-        {open && mounted && (
-          <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10">
-            <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700">
-              {user?.displayName || user?.email || 'User'}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+          >
+            {mounted && user?.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt={user.displayName || user.email || 'User'}
+                className="w-6 h-6 rounded-full object-cover"
+              />
+            ) : (
+              <User className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+            )}
+          </button>
+
+          {dropdownOpen && mounted && (
+            <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10">
+              <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700">
+                {user?.displayName || user?.email || 'User'}
+              </div>
+              <ul className="py-1" aria-labelledby="user-menu-button">
+                <li>
+                  <button
+                    onClick={() => {
+                      setShowHistoryModal(true);
+                      setDropdownOpen(false); // Close dropdown when opening history modal
+                    }}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white w-full text-left"
+                  >
+                    Transfer History
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white w-full text-left"
+                  >
+                    Logout
+                  </button>
+                </li>
+              </ul>
             </div>
-            <button
-              onClick={handleLogout}
-              className="w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
-              <LogOut className="inline-block w-4 h-4 mr-2" />
-              Logout
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
+      {showHistoryModal && (
+        <TransferHistoryModal
+          isOpen={showHistoryModal}
+          onClose={() => setShowHistoryModal(false)}
+          history={transferHistory}
+        />
+      )}
     </nav>
   );
 }

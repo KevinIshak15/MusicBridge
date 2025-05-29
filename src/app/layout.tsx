@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
-
+import { TransferHistoryProvider } from '@/context/TransferHistoryContext';
+import MusicKitLoader from '@/components/MusicKitLoader';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +28,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <script
+        {/* Remove the old script tags */}
+        {/* <script
           dangerouslySetInnerHTML={{
             __html: `
               document.addEventListener("musickitloaded", function() {
@@ -42,11 +44,14 @@ export default function RootLayout({
             `,
           }}
         />
-        <script src="https://js-cdn.music.apple.com/musickit/v1/musickit.js" />
+        <script src="https://js-cdn.music.apple.com/musickit/v1/musickit.js" /> */}
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
-        {children}
+        <TransferHistoryProvider>
+          {children}
+        </TransferHistoryProvider>
+        <MusicKitLoader />
       </body>
     </html>
   );

@@ -7,11 +7,11 @@ export async function GET(req: NextRequest) {
 
   // If there's an error (like user cancelled), redirect back to home
   if (error) {
-    return NextResponse.redirect(new URL('/home?error=access_denied', req.url));
+    return NextResponse.redirect(new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/home?error=access_denied`));
   }
 
   if (!code) {
-    return NextResponse.redirect(new URL('/home?error=no_code', req.url));
+    return NextResponse.redirect(new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/home?error=no_code`));
   }
 
   try {
@@ -42,13 +42,13 @@ export async function GET(req: NextRequest) {
     const cookie = `spotify_access_token=${data.access_token}; expires=${expiresAt}; path=/; SameSite=Lax`;
 
     // Redirect to the home page with the cookie
-    return NextResponse.redirect(new URL('/', req.url), {
+    return NextResponse.redirect(new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/home`), {
       headers: {
         'Set-Cookie': cookie,
       },
     });
   } catch (error) {
     console.error('Error in Spotify callback:', error);
-    return NextResponse.redirect(new URL('/home?error=token_failed', req.url));
+    return NextResponse.redirect(new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/home?error=token_failed`));
   }
 }

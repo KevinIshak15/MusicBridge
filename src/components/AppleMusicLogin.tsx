@@ -9,6 +9,15 @@ export default function AppleMusicLogin() {
   const music = useMusicKit();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    const checkConnection = () => {
+      const token = localStorage.getItem('apple_user_token');
+      setIsConnected(!!token);
+    };
+    checkConnection();
+  }, []);
 
   // Reset loading state if component unmounts while loading
   useEffect(() => {
@@ -30,7 +39,6 @@ export default function AppleMusicLogin() {
     try {
       music.unauthorize();
       localStorage.removeItem('apple_user_token');
-      localStorage.setItem('musicbridge_service', 'apple');
 
       const token = await music.authorize();
       clearTimeout(timeoutId);
@@ -38,16 +46,19 @@ export default function AppleMusicLogin() {
       try {
         await music.api.library.playlists();
         localStorage.setItem('apple_user_token', token);
-        router.push('/');
+        setIsConnected(true);
+        window.location.href = '/home';
       } catch {
         music.unauthorize();
         localStorage.removeItem('apple_user_token');
+        setIsConnected(false);
         setIsLoading(false);
       }
     } catch {
       clearTimeout(timeoutId);
       music.unauthorize();
       localStorage.removeItem('apple_user_token');
+      setIsConnected(false);
       setIsLoading(false);
     }
   };
@@ -55,13 +66,13 @@ export default function AppleMusicLogin() {
   return (
     <button
       onClick={handleLogin}
-      disabled={isLoading}
+      disabled={isLoading || isConnected}
       className={`flex flex-col items-center bg-[#FA243C] hover:bg-[#ff4757] text-white font-semibold py-6 px-8 rounded-xl shadow-md transition duration-300 w-64 ${
-        isLoading ? 'opacity-50 cursor-not-allowed' : ''
+        (isLoading || isConnected) ? 'opacity-50 cursor-not-allowed' : ''
       }`}
     >
       <FaApple size={40} className="mb-3" />
-      <span className="text-xl">{isLoading ? 'Connecting...' : 'Apple Music'}</span>
+      <span className="text-xl">Apple Music</span>
     </button>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Track = {
@@ -41,6 +41,17 @@ export default function TrackModal({
   setNewPlaylistName,
   setNewPlaylistDescription,
 }: Props) {
+  const [nameError, setNameError] = useState('');
+
+  const handleTransfer = () => {
+    if (!newPlaylistName.trim()) {
+      setNameError('Please enter a playlist name');
+      return;
+    }
+    setNameError('');
+    onTransfer();
+  };
+
   return (
     <AnimatePresence>
       <motion.div
@@ -68,14 +79,24 @@ export default function TrackModal({
           <h2 className="text-2xl font-bold text-gray-900 mb-4">🎵 {playlistName}</h2>
 
             <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Playlist Name</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Playlist Name <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 value={newPlaylistName}
-                onChange={(e) => setNewPlaylistName(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-2 text-gray-800 focus:ring-blue-500 focus:outline-none"
+                onChange={(e) => {
+                  setNewPlaylistName(e.target.value);
+                  if (nameError) setNameError('');
+                }}
+                className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-2 text-gray-800 focus:ring-blue-500 focus:outline-none ${
+                  nameError ? 'border-red-500' : ''
+                }`}
                 placeholder="Enter playlist name"
               />
+              {nameError && (
+                <p className="mt-1 text-sm text-red-500">{nameError}</p>
+              )}
               <label className="block text-sm font-semibold text-gray-700 mt-4 mb-1">Description</label>
               <textarea
                 value={newPlaylistDescription}
@@ -84,6 +105,7 @@ export default function TrackModal({
                 placeholder="Optional description"
                 rows={3}
               />
+              <p className="mt-1 text-sm text-gray-500">If left empty, description will be "Created by MusicBridge"</p>
             </div>
 
           <div className="flex items-center justify-between mb-4">
@@ -92,7 +114,7 @@ export default function TrackModal({
             </p>
             <button
               onClick={onToggleAll}
-              className="text-sm px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-800 shadow"
+              className="text-sm px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-800 shadow cursor-pointer"
             >
               {allSelected ? 'Deselect All' : 'Select All'}
             </button>
@@ -117,7 +139,7 @@ export default function TrackModal({
                 </div>
                 <button
                   onClick={() => onToggleTrack(track.id)}
-                  className={`ml-4 px-4 py-1 text-sm rounded-md border transition ${
+                  className={`ml-4 px-4 py-1 text-sm rounded-md border transition cursor-pointer ${
                     selectedTracks.has(track.id)
                       ? 'bg-blue-100 border-blue-300 text-blue-800 hover:bg-blue-200'
                       : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
@@ -130,8 +152,10 @@ export default function TrackModal({
           </div>
 
           <button
-            onClick={onTransfer}
-            className="mt-6 w-full bg-blue-600 text-white py-3 text-base font-medium rounded-lg hover:bg-blue-700 shadow"
+            onClick={handleTransfer}
+            className={`mt-6 w-full bg-blue-600 text-white py-3 text-base font-medium rounded-lg hover:bg-blue-700 shadow cursor-pointer transition-colors ${
+              !newPlaylistName.trim() ? 'opacity-50' : ''
+            }`}
           >
             Transfer Selected to {service === 'apple' ? 'Spotify' : 'Apple Music'}
           </button>

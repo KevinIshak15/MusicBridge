@@ -30,7 +30,9 @@ export async function GET(req: NextRequest) {
   try {
     const playlists = await getUserPlaylists(accessToken);
     return NextResponse.json({ playlists });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Error fetching Spotify playlists:', error);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
