@@ -9,7 +9,7 @@ interface BasicMusicKit {
   api: {
     library: {
       playlists: () => Promise<AppleMusicApiPlaylist[]>; // Removed | any
-      playlist: (id: string) => Promise<{ data: AppleMusicApiTrack[] }>; // Removed | any
+      playlist: (id: string) => Promise<{ relationships: { tracks: { data: AppleMusicApiTrack[] } } }>; // Updated return type for playlist to match observed structure
       // other library methods used
     };
     // other api methods used
