@@ -193,6 +193,7 @@ export default function Page() {
         const fetchedTracks = await getPlaylistTracks(token!, playlist.id);
         setTracks(fetchedTracks);
         setSelectedTrackIds(new Set(fetchedTracks.map((t: Track) => t.id)));
+        setAllSelected(true);
       } else if (service === 'apple') {
         const music = window.MusicKit.getInstance();
         const res = await music.api.library.playlist(playlist.id);
@@ -206,6 +207,7 @@ export default function Page() {
         }));
         setTracks(fetchedTracks);
         setSelectedTrackIds(new Set(fetchedTracks.map((t: Track) => t.id)));
+        setAllSelected(true);
       }
       setShowModal(true);
     } catch (error: unknown) {

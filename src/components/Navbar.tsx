@@ -47,7 +47,7 @@ export default function Navbar() {
     }
     auth.signOut();
     localStorage.clear(); // Clear all local storage items
-    router.push('/'); // Redirect to home page after logout
+    router.push('/home'); // Redirect to home page after logout
   };
 
   if (!mounted) {
