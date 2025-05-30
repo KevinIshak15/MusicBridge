@@ -12,6 +12,11 @@ interface BasicMusicKit {
       playlist: (id: string) => Promise<{ relationships: { tracks: { data: AppleMusicApiTrack[] } } }>; // Updated return type for playlist to match observed structure
       // other library methods used
     };
+    // Added search method to the API interface
+    search: (
+      term: string,
+      options?: { types?: string[]; limit?: number }
+    ) => Promise<{ songs?: { data: AppleMusicApiTrack[] } }>;
     // other api methods used
   };
   unauthorize: () => void;
