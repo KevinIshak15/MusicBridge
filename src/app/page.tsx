@@ -14,6 +14,7 @@ import PlaylistDetails from '@/components/PlaylistDetails';
 import { addTransferToHistory } from '@/lib/transferHistory';
 import { auth } from '@/lib/firebase';
 import { useTransferHistory } from '@/context/TransferHistoryContext';
+import { AppleMusicApiPlaylist, AppleMusicApiTrack } from '../lib/apple';
 
 
 type Playlist = {
@@ -28,25 +29,6 @@ type Track = {
   artist: string;
   albumArt: string;
 };
-
-// Define a type for Apple Music track data from the API response
-interface AppleMusicApiTrack {
-  id: string;
-  type: string; // e.g., 'songs'
-  attributes: {
-    name: string;
-    artistName: string;
-    albumName: string;
-    artwork?: {
-      url: string;
-      width: number;
-      height: number;
-      // other properties might exist
-    };
-    // other attributes might exist
-  };
-  // other properties might exist
-}
 
 export default function Page() {
   const router = useRouter();

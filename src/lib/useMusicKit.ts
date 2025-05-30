@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { AppleMusicApiPlaylist, AppleMusicApiTrack } from '../lib/apple';
 
 // Define a basic interface for the parts of MusicKit we use
 interface BasicMusicKit {

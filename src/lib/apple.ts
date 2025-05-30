@@ -8,7 +8,7 @@ export type Track = {
   };
   
   // Define a type for Apple Music playlist data from the API response
-  interface AppleMusicApiPlaylist {
+  export interface AppleMusicApiPlaylist {
     id: string;
     type: string; // e.g., 'playlists'
     attributes?: {
@@ -22,6 +22,24 @@ export type Track = {
       // other attributes might exist
     };
     // other properties might exist
+  }
+  
+  // Define a type for Apple Music track data from the API response
+  export interface AppleMusicApiTrack {
+    id: string;
+    type: string; // e.g., 'songs'
+    attributes: {
+      name: string;
+      artistName: string;
+      albumName?: string;
+      artwork?: {
+        url: string;
+        width: number;
+        height: number;
+      };
+      // include other relevant attributes if needed
+    };
+    // include other relevant top-level properties if needed
   }
   
   export async function transferToAppleMusic(
