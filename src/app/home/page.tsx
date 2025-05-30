@@ -45,10 +45,10 @@ export default function Home() {
   const handleTransferDirection = (direction: 'spotify-to-apple' | 'apple-to-spotify') => {
     if (direction === 'spotify-to-apple') {
       localStorage.setItem('musicbridge_service', 'spotify');
-      router.push('/');
+      router.push('/playlists');
     } else {
       localStorage.setItem('musicbridge_service', 'apple');
-      router.push('/');
+      router.push('/playlists');
     }
   };
 
