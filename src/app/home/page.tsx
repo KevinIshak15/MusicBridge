@@ -33,12 +33,17 @@ export default function Home() {
     }
   }, [mounted]);
 
+  useEffect(() => {
+    if (mounted && !loading && !user) {
+      router.push('/login');
+    }
+  }, [mounted, loading, user, router]);
+
   if (!mounted || loading) {
     return null;
   }
 
   if (!user) {
-    router.push('/login');
     return null;
   }
 

@@ -399,10 +399,15 @@ export default function Page() {
               >
                 <div className="relative">
                   <img
-                    src={pl.images[0]?.url}
+                    src={pl.images?.[0]?.url || 'https://placehold.co/300x300?text=No+Image'}
                     alt={pl.name}
                     className="w-full h-40 object-contain rounded mb-2 bg-white"
                     loading="lazy"
+                    onError={(e) => {
+                      // If the image fails to load, set a default background color
+                      (e.target as HTMLImageElement).style.backgroundColor = '#f3f4f6';
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
                   />
                   <button
                     onClick={() => {

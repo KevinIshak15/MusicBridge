@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { User, History } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuthRedirect } from '@/lib/useAuthRedirect';
 import { auth } from '@/lib/firebase';
 import TransferHistoryModal from '@/components/TransferHistoryModal';
@@ -15,6 +15,7 @@ export default function Navbar() {
   const { user } = useAuthRedirect();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const pathname = usePathname();
 
   const { transferHistory } = useTransferHistory();
 
@@ -46,7 +47,26 @@ export default function Navbar() {
       // await clearTransferHistory(user.uid);
     }
     auth.signOut();
-    localStorage.clear(); // Clear all local storage items
+    
+    // Clear all service-related data
+    localStorage.removeItem('musicbridge_service');
+    localStorage.removeItem('spotify_playlists');
+    localStorage.removeItem('spotify_playlists_timestamp');
+    localStorage.removeItem('apple_playlists');
+    localStorage.removeItem('apple_playlists_timestamp');
+    localStorage.removeItem('apple_user_token');
+    
+    // Clear Spotify cookie
+    document.cookie = 'spotify_access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    
+    // Clear MusicKit instance if it exists
+    if (window.MusicKit) {
+      const music = window.MusicKit.getInstance();
+      if (music) {
+        music.unauthorize();
+      }
+    }
+    
     router.push('/home'); // Redirect to home page after logout
   };
 
@@ -63,13 +83,15 @@ export default function Navbar() {
       </Link>
 
       <div className="flex items-center gap-4">
-        <button
-          onClick={() => setShowHistoryModal(true)}
-          className="p-2 text-gray-600 hover:text-gray-900 rounded-full hover:bg-gray-100"
-          title="Transfer History"
-        >
-          <History size={20} />
-        </button>
+        {pathname !== '/login' && pathname !== '/home' && (
+          <button
+            onClick={() => setShowHistoryModal(true)}
+            className="p-2 text-gray-600 hover:text-gray-900 rounded-full hover:bg-gray-100"
+            title="Transfer History"
+          >
+            <History size={20} />
+          </button>
+        )}
 
         <div className="relative" ref={dropdownRef}>
           <button
@@ -93,17 +115,6 @@ export default function Navbar() {
                 {user?.displayName || user?.email || 'User'}
               </div>
               <ul className="py-1" aria-labelledby="user-menu-button">
-                <li>
-                  <button
-                    onClick={() => {
-                      setShowHistoryModal(true);
-                      setDropdownOpen(false); // Close dropdown when opening history modal
-                    }}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white w-full text-left"
-                  >
-                    Transfer History
-                  </button>
-                </li>
                 <li>
                   <button
                     onClick={handleLogout}
