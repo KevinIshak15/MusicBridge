@@ -1,9 +1,9 @@
+import React from 'react';
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 import { TransferHistoryProvider } from '@/context/TransferHistoryContext';
-import MusicKitLoader from '@/components/MusicKitLoader';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,7 +51,6 @@ export default function RootLayout({
         <TransferHistoryProvider>
           {children}
         </TransferHistoryProvider>
-        <MusicKitLoader />
       </body>
     </html>
   );
