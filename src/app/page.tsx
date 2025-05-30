@@ -14,7 +14,7 @@ import PlaylistDetails from '@/components/PlaylistDetails';
 import { addTransferToHistory } from '@/lib/transferHistory';
 import { auth } from '@/lib/firebase';
 import { useTransferHistory } from '@/context/TransferHistoryContext';
-import { AppleMusicApiPlaylist, AppleMusicApiTrack } from '../lib/apple';
+import { AppleMusicApiTrack } from '../lib/apple';
 
 
 type Playlist = {
