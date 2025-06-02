@@ -132,7 +132,7 @@ playlistName: string, tracks: Track[], token: string, newPlaylistDescription: st
     let nextUrl: string | null = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`;
 
     while (nextUrl) {
-      const res = await fetch(nextUrl, {
+      const res: Response = await fetch(nextUrl, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
