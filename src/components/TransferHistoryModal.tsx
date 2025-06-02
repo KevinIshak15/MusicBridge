@@ -1,21 +1,30 @@
-import { X, CheckCircle, XCircle, Filter } from 'lucide-react';
+import { X, CheckCircle, XCircle, Filter, RefreshCw } from 'lucide-react';
 import { TransferHistory, formatTimestamp } from '@/lib/transferHistory';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useTransferHistory } from '@/context/TransferHistoryContext';
 
 type TransferHistoryModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  history: TransferHistory[];
 };
 
 type FilterType = 'all' | 'success' | 'failed';
 type ServiceFilter = 'all' | 'spotify' | 'apple';
 
-export default function TransferHistoryModal({ isOpen, onClose, history }: TransferHistoryModalProps) {
+export default function TransferHistoryModal({ isOpen, onClose }: TransferHistoryModalProps) {
   const [statusFilter, setStatusFilter] = useState<FilterType>('all');
   const [serviceFilter, setServiceFilter] = useState<ServiceFilter>('all');
+  const { transferHistory, isLoadingHistory, refreshHistory } = useTransferHistory();
 
-  const filteredHistory = history.filter(transfer => {
+  // Refresh history when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      console.log('[MusicBridge] Modal opened, refreshing history');
+      refreshHistory();
+    }
+  }, [isOpen, refreshHistory]);
+
+  const filteredHistory = transferHistory.filter(transfer => {
     if (statusFilter !== 'all' && transfer.status !== statusFilter) return false;
     if (serviceFilter !== 'all' && 
         transfer.sourceService !== serviceFilter && 
@@ -23,22 +32,42 @@ export default function TransferHistoryModal({ isOpen, onClose, history }: Trans
     return true;
   });
 
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    // Only close if the click was directly on the overlay
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   if (!isOpen) {
     return null;
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      onClick={handleOverlayClick}
+    >
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="p-6 border-b">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-gray-900">Transfer History</h2>
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <X size={24} />
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={refreshHistory}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+                title="Refresh History"
+                disabled={isLoadingHistory}
+              >
+                <RefreshCw size={20} className={isLoadingHistory ? 'animate-spin' : ''} />
+              </button>
+              <button
+                onClick={onClose}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
           </div>
 
           <div className="mt-4 flex gap-4">
@@ -80,7 +109,9 @@ export default function TransferHistoryModal({ isOpen, onClose, history }: Trans
               {filteredHistory.map((transfer) => (
                 <div
                   key={transfer.id}
-                  className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                  className={`p-4 border rounded-lg hover:bg-gray-50 transition-colors ${
+                    isLoadingHistory ? 'animate-pulse' : ''
+                  }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">

@@ -28,8 +28,8 @@ export const TransferHistoryProvider = ({ children }: TransferHistoryProviderPro
   // Effect to listen for auth state changes
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
+      console.log('[MusicBridge] Auth state changed:', user?.uid);
       setCurrentUser(user);
-      // History fetching will be handled by the effect triggered by currentUser change
     });
 
     return () => unsubscribe();
@@ -37,13 +37,16 @@ export const TransferHistoryProvider = ({ children }: TransferHistoryProviderPro
 
   // Function to fetch history for the current user
   const fetchHistory = useCallback(async (user: User) => {
+    if (!user) return;
+    
+    console.log('[MusicBridge] Fetching history for user:', user.uid);
     setIsLoadingHistory(true);
     try {
       const history = await getTransferHistory(user.uid);
+      console.log('[MusicBridge] Fetched transfer history:', history);
       setTransferHistory(history);
     } catch (error) {
-      console.error('Error fetching transfer history:', error);
-      setTransferHistory([]); // Clear history on error
+      console.error('[MusicBridge] Error fetching transfer history:', error);
     } finally {
       setIsLoadingHistory(false);
     }
@@ -52,8 +55,10 @@ export const TransferHistoryProvider = ({ children }: TransferHistoryProviderPro
   // Effect to fetch history when the user changes
   useEffect(() => {
     if (currentUser) {
+      console.log('[MusicBridge] Current user changed, fetching history for:', currentUser.uid);
       fetchHistory(currentUser);
     } else {
+      console.log('[MusicBridge] No current user, clearing history');
       setTransferHistory([]);
       setIsLoadingHistory(false);
     }
@@ -62,6 +67,7 @@ export const TransferHistoryProvider = ({ children }: TransferHistoryProviderPro
   // Function to be exposed to refresh history manually
   const refreshHistory = useCallback(async () => {
     if (currentUser) {
+      console.log('[MusicBridge] Manually refreshing history for:', currentUser.uid);
       await fetchHistory(currentUser);
     }
   }, [currentUser, fetchHistory]);

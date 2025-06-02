@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, addDoc, query, where, getDocs, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, deleteDoc, Timestamp } from 'firebase/firestore';
 
 export type TransferHistory = {
   id?: string; // Firestore document ID
@@ -21,7 +21,7 @@ export const addTransferToHistory = async (transferDetails: Omit<TransferHistory
     const timestamp = transferDetails.timestamp || new Date();
     await addDoc(transferHistoriesCollection, {
       ...transferDetails,
-      timestamp,
+      timestamp: Timestamp.fromDate(timestamp), // Convert Date to Firestore Timestamp
     });
   } catch (error) {
     console.error('Error adding transfer to history:', error);
@@ -34,7 +34,6 @@ export const getTransferHistory = async (userId: string): Promise<TransferHistor
     const querySnapshot = await getDocs(q);
     const history: TransferHistory[] = [];
     querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
       const data = doc.data();
       history.push({
         id: doc.id,
@@ -44,7 +43,7 @@ export const getTransferHistory = async (userId: string): Promise<TransferHistor
         sourcePlaylistName: data.sourcePlaylistName,
         destinationPlaylistName: data.destinationPlaylistName,
         status: data.status,
-        timestamp: data.timestamp.toDate(), // Convert Firestore Timestamp to Date
+        timestamp: data.timestamp instanceof Timestamp ? data.timestamp.toDate() : new Date(data.timestamp), // Handle both Timestamp and Date
         trackCount: data.trackCount,
         errorMessage: data.errorMessage,
       });

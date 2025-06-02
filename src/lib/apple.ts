@@ -58,6 +58,8 @@ export type Track = {
   
       // Search for each track
       const appleTrackIds: string[] = [];
+      const notFoundTracks: Track[] = [];
+      
       for (const track of tracks) {
         const query = `${track.name} ${track.artist}`;
         const result = await music.api.search(query, { types: ['songs'], limit: 1 });
@@ -66,43 +68,94 @@ export type Track = {
           appleTrackIds.push(match.id);
         } else {
           console.warn(`[MusicBridge] Not found: ${query}`);
+          notFoundTracks.push(track);
         }
       }
   
       if (appleTrackIds.length === 0) {
-        return { success: false, message: 'No matching tracks found.' };
+        return { 
+          success: false, 
+          message: 'No matching tracks found in Apple Music.' 
+        };
       }
-  
-      // Create the playlist via Apple Music API
-      const res = await fetch('https://api.music.apple.com/v1/me/library/playlists', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${developerToken}`,
-          'Music-User-Token': userToken,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          attributes: {
-            name: playlistName,
-            description: newPlaylistDescription || 'Created by MusicBridge',
-          },
-          relationships: {
-            tracks: {
-              data: appleTrackIds.map((id) => ({ id, type: 'songs' })),
+
+      // Split tracks into smaller chunks to avoid overwhelming the API
+      const chunkSize = 50;
+      const trackChunks = [];
+      for (let i = 0; i < appleTrackIds.length; i += chunkSize) {
+        trackChunks.push(appleTrackIds.slice(i, i + chunkSize));
+      }
+
+      let playlistId = '';
+      let retryCount = 0;
+      const maxRetries = 3;
+
+      while (retryCount < maxRetries) {
+        try {
+          // Create the playlist via Apple Music API
+          const res = await fetch('https://api.music.apple.com/v1/me/library/playlists', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${developerToken}`,
+              'Music-User-Token': userToken,
+              'Content-Type': 'application/json',
             },
-          },
-        }),
-      });
+            body: JSON.stringify({
+              attributes: {
+                name: playlistName,
+                description: newPlaylistDescription || 'Created by MusicBridge',
+              },
+              relationships: {
+                tracks: {
+                  data: trackChunks[0].map((id) => ({ id, type: 'songs' })),
+                },
+              },
+            }),
+          });
   
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Apple Music playlist creation failed: ${errorText}`);
+          if (!res.ok) {
+            const errorData = await res.json();
+            if (errorData.errors?.[0]?.code === '50001' && retryCount < maxRetries - 1) {
+              retryCount++;
+              // Wait for 2 seconds before retrying
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              continue;
+            }
+            throw new Error(`Apple Music playlist creation failed: ${JSON.stringify(errorData)}`);
+          }
+
+          const playlistData = await res.json();
+          playlistId = playlistData.data[0].id;
+
+          // Add remaining tracks in chunks
+          for (let i = 1; i < trackChunks.length; i++) {
+            await fetch(`https://api.music.apple.com/v1/me/library/playlists/${playlistId}/tracks`, {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${developerToken}`,
+                'Music-User-Token': userToken,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                data: trackChunks[i].map((id) => ({ id, type: 'songs' })),
+              }),
+            });
+          }
+
+          let message = `Playlist "${playlistName}" created in Apple Music with ${appleTrackIds.length} track(s)!`;
+          if (notFoundTracks.length > 0) {
+            message += `\n${notFoundTracks.length} track(s) could not be found in Apple Music.`;
+          }
+          
+          return { success: true, message };
+        } catch (error) {
+          if (retryCount === maxRetries - 1) throw error;
+          retryCount++;
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
       }
   
-      return {
-        success: true,
-        message: `Playlist "${playlistName}" created in Apple Music with ${appleTrackIds.length} track(s)!`,
-      };
+      throw new Error('Failed to create playlist after multiple retries');
     } catch (error: unknown) {
       console.error('[MusicBridge] Error transferring to Apple Music:', error);
       const errorMessage = error instanceof Error ? error.message : 'An error occurred during transfer.';
