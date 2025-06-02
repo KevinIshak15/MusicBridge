@@ -1,5 +1,5 @@
 import { X, CheckCircle, XCircle, Filter, RefreshCw } from 'lucide-react';
-import { TransferHistory, formatTimestamp } from '@/lib/transferHistory';
+import { formatTimestamp } from '@/lib/transferHistory';
 import { useState, useEffect } from 'react';
 import { useTransferHistory } from '@/context/TransferHistoryContext';
 
