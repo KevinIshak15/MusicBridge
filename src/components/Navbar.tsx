@@ -133,7 +133,6 @@ export default function Navbar() {
         <TransferHistoryModal
           isOpen={showHistoryModal}
           onClose={() => setShowHistoryModal(false)}
-          history={transferHistory}
         />
       )}
     </nav>
