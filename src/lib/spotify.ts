@@ -128,19 +128,34 @@ playlistName: string, tracks: Track[], token: string, newPlaylistDescription: st
   }
   
   export async function getPlaylistTracks(accessToken: string, playlistId: string) {
-    const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-  
-    if (!res.ok) {
-      throw new Error(`Failed to fetch tracks: ${res.status}`);
+    let allTracks: SpotifyApiTrackItem[] = [];
+    let nextUrl: string | null = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`;
+
+    while (nextUrl) {
+      const res = await fetch(nextUrl, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch tracks: ${res.status}`);
+      }
+
+      const data = await res.json();
+      allTracks = [...allTracks, ...data.items];
+      nextUrl = data.next; // Spotify provides the next page URL in the response
     }
-  
-    const data = await res.json();
-  
-    return data.items.map((item: SpotifyApiTrackItem) => ({
+
+    // Use a Map to ensure unique tracks based on their IDs
+    const uniqueTracks = new Map();
+    allTracks.forEach((item: SpotifyApiTrackItem) => {
+      if (!uniqueTracks.has(item.track.id)) {
+        uniqueTracks.set(item.track.id, item);
+      }
+    });
+
+    return Array.from(uniqueTracks.values()).map((item: SpotifyApiTrackItem) => ({
       id: item.track.id,
       name: item.track.name,
       artist: item.track.artists[0]?.name,
