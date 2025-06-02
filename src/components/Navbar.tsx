@@ -7,7 +7,6 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuthRedirect } from '@/lib/useAuthRedirect';
 import { auth } from '@/lib/firebase';
 import TransferHistoryModal from '@/components/TransferHistoryModal';
-import { useTransferHistory } from '@/context/TransferHistoryContext';
 
 export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -16,9 +15,6 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const pathname = usePathname();
-
-  const { transferHistory } = useTransferHistory();
-
   const router = useRouter();
 
   useEffect(() => {
