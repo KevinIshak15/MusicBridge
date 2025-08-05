@@ -16,7 +16,7 @@ export default function Navbar() {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-
+  
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -90,38 +90,38 @@ export default function Navbar() {
         )}
 
         <div className="relative" ref={dropdownRef}>
-          <button
+        <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-          >
+          className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+        >
             {mounted && user?.photoURL ? (
-              <img
+            <img
                 src={user.photoURL}
                 alt={user.displayName || user.email || 'User'}
-                className="w-6 h-6 rounded-full object-cover"
-              />
-            ) : (
-              <User className="w-5 h-5 text-gray-700 dark:text-gray-200" />
-            )}
-          </button>
+              className="w-6 h-6 rounded-full object-cover"
+            />
+          ) : (
+            <User className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+          )}
+        </button>
 
           {dropdownOpen && mounted && (
-            <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10">
-              <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700">
+          <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10">
+            <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700">
                 {user?.displayName || user?.email || 'User'}
-              </div>
+            </div>
               <ul className="py-1" aria-labelledby="user-menu-button">
                 <li>
-                  <button
-                    onClick={handleLogout}
+            <button
+              onClick={handleLogout}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white w-full text-left"
-                  >
-                    Logout
-                  </button>
+            >
+              Logout
+            </button>
                 </li>
               </ul>
-            </div>
-          )}
+          </div>
+        )}
         </div>
       </div>
 

@@ -129,9 +129,14 @@ export default function TrackModal({
                 }`}
               >
                 <img
-                  src={track.albumArt}
+                  src={track.albumArt || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHZpZXdCb3g9IjAgMCA1NiA1NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjU2IiBoZWlnaHQ9IjU2IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yOCAyMEMyMy41ODE3IDIwIDIwIDIzLjU4MTcgMjAgMjhDMjAgMzIuNDE4MyAyMy41ODE3IDM2IDI4IDM2QzMyLjQxODMgMzYgMzYgMzIuNDE4MyAzNiAyOEMzNiAyMy41ODE3IDMyLjQxODMgMjAgMjggMjBaIiBmaWxsPSIjOUI5QkEwIi8+Cjwvc3ZnPgo='}
                   alt="art"
                   className="w-14 h-14 rounded mr-4 object-cover"
+                  onError={(e) => {
+                    // If the image fails to load, set a default background color
+                    (e.target as HTMLImageElement).style.backgroundColor = '#f3f4f6';
+                    (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHZpZXdCb3g9IjAgMCA1NiA1NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjU2IiBoZWlnaHQ9IjU2IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yOCAyMEMyMy41ODE3IDIwIDIwIDIzLjU4MTcgMjAgMjhDMjAgMzIuNDE4MyAyMy41ODE3IDM2IDI4IDM2QzMyLjQxODMgMzYgMzYgMzIuNDE4MyAzNiAyOEMzNiAyMy41ODE3IDMyLjQxODMgMjAgMjggMjBaIiBmaWxsPSIjOUI5QkEwIi8+Cjwvc3ZnPgo=';
+                  }}
                 />
                 <div className="flex-1">
                   <p className="font-semibold text-gray-900 text-base">{track.name}</p>

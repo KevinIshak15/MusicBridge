@@ -68,7 +68,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold text-center mb-8 text-white dark:text-white">
             Welcome to MusicBridge
-          </h1>
+        </h1>
           <div className="text-center mb-12">
             <p className="text-lg text-gray-600 dark:text-gray-300">
               Transfer your playlists between Spotify and Apple Music
@@ -91,16 +91,16 @@ export default function Home() {
                     : 'Connect your Spotify account'}
                 </p>
                 <div className="flex flex-col items-center space-y-4">
-                  <button
-                    onClick={handleSpotifyLogin}
+          <button
+            onClick={handleSpotifyLogin}
                     disabled={isSpotifyAuthenticated}
                     className={`flex flex-col items-center bg-[#1DB954] hover:bg-[#1ed760] text-white font-semibold py-6 px-8 rounded-xl shadow-md transition duration-300 w-64 ${
                       isSpotifyAuthenticated ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
-                  >
-                    <FaSpotify size={40} className="mb-3" />
-                    <span className="text-xl">Spotify</span>
-                  </button>
+          >
+            <FaSpotify size={40} className="mb-3" />
+            <span className="text-xl">Spotify</span>
+          </button>
                 </div>
               </div>
 
@@ -114,9 +114,9 @@ export default function Home() {
                     ? 'Connected to Apple Music'
                     : 'Connect your Apple Music account'}
                 </p>
-                <AppleMusicLogin />
-              </div>
-            </div>
+          <AppleMusicLogin />
+        </div>
+      </div>
           </div>
 
           {isSpotifyAuthenticated && isAppleMusicAuthenticated && (

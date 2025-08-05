@@ -43,7 +43,7 @@ export default function AppleMusicLogin() {
       
       try {
         await music.api.library.playlists();
-        localStorage.setItem('apple_user_token', token);
+      localStorage.setItem('apple_user_token', token);
         setIsConnected(true);
         window.location.href = '/home';
       } catch {

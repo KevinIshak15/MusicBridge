@@ -1,0 +1,333 @@
+[33mcommit 7a61d496a77b49d2b86f6c4fb191929e2b1b78cf[m
+Author: KevinIshak15 <56769270+KevinIshak15@users.noreply.github.com>
+Date:   Mon Jun 2 15:55:09 2025 -0400
+
+    Minor fixes
+
+[1mdiff --git a/src/components/TransferHistoryModal.tsx b/src/components/TransferHistoryModal.tsx[m
+[1mindex 3da9bd0..66b424a 100644[m
+[1m--- a/src/components/TransferHistoryModal.tsx[m
+[1m+++ b/src/components/TransferHistoryModal.tsx[m
+[36m@@ -1,21 +1,30 @@[m
+[31m-import { X, CheckCircle, XCircle, Filter } from 'lucide-react';[m
+[32m+[m[32mimport { X, CheckCircle, XCircle, Filter, RefreshCw } from 'lucide-react';[m
+ import { TransferHistory, formatTimestamp } from '@/lib/transferHistory';[m
+[31m-import { useState } from 'react';[m
+[32m+[m[32mimport { useState, useEffect } from 'react';[m
+[32m+[m[32mimport { useTransferHistory } from '@/context/TransferHistoryContext';[m
+ [m
+ type TransferHistoryModalProps = {[m
+   isOpen: boolean;[m
+   onClose: () => void;[m
+[31m-  history: TransferHistory[];[m
+ };[m
+ [m
+ type FilterType = 'all' | 'success' | 'failed';[m
+ type ServiceFilter = 'all' | 'spotify' | 'apple';[m
+ [m
+[31m-export default function TransferHistoryModal({ isOpen, onClose, history }: TransferHistoryModalProps) {[m
+[32m+[m[32mexport default function TransferHistoryModal({ isOpen, onClose }: TransferHistoryModalProps) {[m
+   const [statusFilter, setStatusFilter] = useState<FilterType>('all');[m
+   const [serviceFilter, setServiceFilter] = useState<ServiceFilter>('all');[m
+[32m+[m[32m  const { transferHistory, isLoadingHistory, refreshHistory } = useTransferHistory();[m
+ [m
+[31m-  const filteredHistory = history.filter(transfer => {[m
+[32m+[m[32m  // Refresh history when modal opens[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    if (isOpen) {[m
+[32m+[m[32m      console.log('[MusicBridge] Modal opened, refreshing history');[m
+[32m+[m[32m      refreshHistory();[m
+[32m+[m[32m    }[m
+[32m+[m[32m  }, [isOpen, refreshHistory]);[m
+[32m+[m
+[32m+[m[32m  const filteredHistory = transferHistory.filter(transfer => {[m
+     if (statusFilter !== 'all' && transfer.status !== statusFilter) return false;[m
+     if (serviceFilter !== 'all' && [m
+         transfer.sourceService !== serviceFilter && [m
+[36m@@ -23,22 +32,42 @@[m [mexport default function TransferHistoryModal({ isOpen, onClose, history }: Trans[m
+     return true;[m
+   });[m
+ [m
+[32m+[m[32m  const handleOverlayClick = (e: React.MouseEvent) => {[m
+[32m+[m[32m    // Only close if the click was directly on the overlay[m
+[32m+[m[32m    if (e.target === e.currentTarget) {[m
+[32m+[m[32m      onClose();[m
+[32m+[m[32m    }[m
+[32m+[m[32m  };[m
+[32m+[m
+   if (!isOpen) {[m
+     return null;[m
+   }[m
+ [m
+   return ([m
+[31m-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">[m
+[32m+[m[32m    <div[m[41m [m
+[32m+[m[32m      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"[m
+[32m+[m[32m      onClick={handleOverlayClick}[m
+[32m+[m[32m    >[m
+       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">[m
+         <div className="p-6 border-b">[m
+           <div className="flex justify-between items-center">[m
+             <h2 className="text-2xl font-bold text-gray-900">Transfer History</h2>[m
+[31m-            <button[m
+[31m-              onClick={onClose}[m
+[31m-              className="text-gray-500 hover:text-gray-700"[m
+[31m-            >[m
+[31m-              <X size={24} />[m
+[31m-            </button>[m
+[32m+[m[32m            <div className="flex items-center gap-4">[m
+[32m+[m[32m              <button[m
+[32m+[m[32m                onClick={refreshHistory}[m
+[32m+[m[32m                className="text-gray-500 hover:text-gray-700 transition-colors"[m
+[32m+[m[32m                title="Refresh History"[m
+[32m+[m[32m                disabled={isLoadingHistory}[m
+[32m+[m[32m              >[m
+[32m+[m[32m                <RefreshCw size={20} className={isLoadingHistory ? 'animate-spin' : ''} />[m
+[32m+[m[32m              </button>[m
+[32m+[m[32m              <button[m
+[32m+[m[32m                onClick={onClose}[m
+[32m+[m[32m                className="text-gray-500 hover:text-gray-700 transition-colors"[m
+[32m+[m[32m              >[m
+[32m+[m[32m                <X size={24} />[m
+[32m+[m[32m              </button>[m
+[32m+[m[32m            </div>[m
+           </div>[m
+ [m
+           <div className="mt-4 flex gap-4">[m
+[36m@@ -80,7 +109,9 @@[m [mexport default function TransferHistoryModal({ isOpen, onClose, history }: Trans[m
+               {filteredHistory.map((transfer) => ([m
+                 <div[m
+                   key={transfer.id}[m
+[31m-                  className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"[m
+[32m+[m[32m                  className={`p-4 border rounded-lg hover:bg-gray-50 transition-colors ${[m
+[32m+[m[32m                    isLoadingHistory ? 'animate-pulse' : ''[m
+[32m+[m[32m                  }`}[m
+                 >[m
+                   <div className="flex items-start justify-between">[m
+                     <div className="flex-1">[m
+[1mdiff --git a/src/context/TransferHistoryContext.tsx b/src/context/TransferHistoryContext.tsx[m
+[1mindex 15c4925..b44739f 100644[m
+[1m--- a/src/context/TransferHistoryContext.tsx[m
+[1m+++ b/src/context/TransferHistoryContext.tsx[m
+[36m@@ -28,8 +28,8 @@[m [mexport const TransferHistoryProvider = ({ children }: TransferHistoryProviderPro[m
+   // Effect to listen for auth state changes[m
+   useEffect(() => {[m
+     const unsubscribe = auth.onAuthStateChanged((user) => {[m
+[32m+[m[32m      console.log('[MusicBridge] Auth state changed:', user?.uid);[m
+       setCurrentUser(user);[m
+[31m-      // History fetching will be handled by the effect triggered by currentUser change[m
+     });[m
+ [m
+     return () => unsubscribe();[m
+[36m@@ -37,13 +37,16 @@[m [mexport const TransferHistoryProvider = ({ children }: TransferHistoryProviderPro[m
+ [m
+   // Function to fetch history for the current user[m
+   const fetchHistory = useCallback(async (user: User) => {[m
+[32m+[m[32m    if (!user) return;[m
+[32m+[m[41m    [m
+[32m+[m[32m    console.log('[MusicBridge] Fetching history for user:', user.uid);[m
+     setIsLoadingHistory(true);[m
+     try {[m
+       const history = await getTransferHistory(user.uid);[m
+[32m+[m[32m      console.log('[MusicBridge] Fetched transfer history:', history);[m
+       setTransferHistory(history);[m
+     } catch (error) {[m
+[31m-      console.error('Error fetching transfer history:', error);[m
+[31m-      setTransferHistory([]); // Clear history on error[m
+[32m+[m[32m      console.error('[MusicBridge] Error fetching transfer history:', error);[m
+     } finally {[m
+       setIsLoadingHistory(false);[m
+     }[m
+[36m@@ -52,8 +55,10 @@[m [mexport const TransferHistoryProvider = ({ children }: TransferHistoryProviderPro[m
+   // Effect to fetch history when the user changes[m
+   useEffect(() => {[m
+     if (currentUser) {[m
+[32m+[m[32m      console.log('[MusicBridge] Current user changed, fetching history for:', currentUser.uid);[m
+       fetchHistory(currentUser);[m
+     } else {[m
+[32m+[m[32m      console.log('[MusicBridge] No current user, clearing history');[m
+       setTransferHistory([]);[m
+       setIsLoadingHistory(false);[m
+     }[m
+[36m@@ -62,6 +67,7 @@[m [mexport const TransferHistoryProvider = ({ children }: TransferHistoryProviderPro[m
+   // Function to be exposed to refresh history manually[m
+   const refreshHistory = useCallback(async () => {[m
+     if (currentUser) {[m
+[32m+[m[32m      console.log('[MusicBridge] Manually refreshing history for:', currentUser.uid);[m
+       await fetchHistory(currentUser);[m
+     }[m
+   }, [currentUser, fetchHistory]);[m
+[1mdiff --git a/src/lib/apple.ts b/src/lib/apple.ts[m
+[1mindex 48fa3b1..7e719c8 100644[m
+[1m--- a/src/lib/apple.ts[m
+[1m+++ b/src/lib/apple.ts[m
+[36m@@ -58,6 +58,8 @@[m [mexport type Track = {[m
+   [m
+       // Search for each track[m
+       const appleTrackIds: string[] = [];[m
+[32m+[m[32m      const notFoundTracks: Track[] = [];[m
+[32m+[m[41m      [m
+       for (const track of tracks) {[m
+         const query = `${track.name} ${track.artist}`;[m
+         const result = await music.api.search(query, { types: ['songs'], limit: 1 });[m
+[36m@@ -66,43 +68,94 @@[m [mexport type Track = {[m
+           appleTrackIds.push(match.id);[m
+         } else {[m
+           console.warn(`[MusicBridge] Not found: ${query}`);[m
+[32m+[m[32m          notFoundTracks.push(track);[m
+         }[m
+       }[m
+   [m
+       if (appleTrackIds.length === 0) {[m
+[31m-        return { success: false, message: 'No matching tracks found.' };[m
+[32m+[m[32m        return {[m[41m [m
+[32m+[m[32m          success: false,[m[41m [m
+[32m+[m[32m          message: 'No matching tracks found in Apple Music.'[m[41m [m
+[32m+[m[32m        };[m
+       }[m
+[31m-  [m
+[31m-      // Create the playlist via Apple Music API[m
+[31m-      const res = await fetch('https://api.music.apple.com/v1/me/library/playlists', {[m
+[31m-        method: 'POST',[m
+[31m-        headers: {[m
+[31m-          Authorization: `Bearer ${developerToken}`,[m
+[31m-          'Music-User-Token': userToken,[m
+[31m-          'Content-Type': 'application/json',[m
+[31m-        },[m
+[31m-        body: JSON.stringify({[m
+[31m-          attributes: {[m
+[31m-            name: playlistName,[m
+[31m-            description: newPlaylistDescription || 'Created by MusicBridge',[m
+[31m-          },[m
+[31m-          relationships: {[m
+[31m-            tracks: {[m
+[31m-              data: appleTrackIds.map((id) => ({ id, type: 'songs' })),[m
+[32m+[m
+[32m+[m[32m      // Split tracks into smaller chunks to avoid overwhelming the API[m
+[32m+[m[32m      const chunkSize = 50;[m
+[32m+[m[32m      const trackChunks = [];[m
+[32m+[m[32m      for (let i = 0; i < appleTrackIds.length; i += chunkSize) {[m
+[32m+[m[32m        trackChunks.push(appleTrackIds.slice(i, i + chunkSize));[m
+[32m+[m[32m      }[m
+[32m+[m
+[32m+[m[32m      let playlistId = '';[m
+[32m+[m[32m      let retryCount = 0;[m
+[32m+[m[32m      const maxRetries = 3;[m
+[32m+[m
+[32m+[m[32m      while (retryCount < maxRetries) {[m
+[32m+[m[32m        try {[m
+[32m+[m[32m          // Create the playlist via Apple Music API[m
+[32m+[m[32m          const res = await fetch('https://api.music.apple.com/v1/me/library/playlists', {[m
+[32m+[m[32m            method: 'POST',[m
+[32m+[m[32m            headers: {[m
+[32m+[m[32m              Authorization: `Bearer ${developerToken}`,[m
+[32m+[m[32m              'Music-User-Token': userToken,[m
+[32m+[m[32m              'Content-Type': 'application/json',[m
+             },[m
+[31m-          },[m
+[31m-        }),[m
+[31m-      });[m
+[31m-  [m
+[31m-      if (!res.ok) {[m
+[31m-        const errorText = await res.text();[m
+[31m-        throw new Error(`Apple Music playlist creation failed: ${errorText}`);[m
+[32m+[m[32m            body: JSON.stringify({[m
+[32m+[m[32m              attributes: {[m
+[32m+[m[32m                name: playlistName,[m
+[32m+[m[32m                description: newPlaylistDescription || 'Created by MusicBridge',[m
+[32m+[m[32m              },[m
+[32m+[m[32m              relationships: {[m
+[32m+[m[32m                tracks: {[m
+[32m+[m[32m                  data: trackChunks[0].map((id) => ({ id, type: 'songs' })),[m
+[32m+[m[32m                },[m
+[32m+[m[32m              },[m
+[32m+[m[32m            }),[m
+[32m+[m[32m          });[m
+[32m+[m[41m  [m
+[32m+[m[32m          if (!res.ok) {[m
+[32m+[m[32m            const errorData = await res.json();[m
+[32m+[m[32m            if (errorData.errors?.[0]?.code === '50001' && retryCount < maxRetries - 1) {[m
+[32m+[m[32m              retryCount++;[m
+[32m+[m[32m              // Wait for 2 seconds before retrying[m
+[32m+[m[32m              await new Promise(resolve => setTimeout(resolve, 2000));[m
+[32m+[m[32m              continue;[m
+[32m+[m[32m            }[m
+[32m+[m[32m            throw new Error(`Apple Music playlist creation failed: ${JSON.stringify(errorData)}`);[m
+[32m+[m[32m          }[m
+[32m+[m
+[32m+[m[32m          const playlistData = await res.json();[m
+[32m+[m[32m          playlistId = playlistData.data[0].id;[m
+[32m+[m
+[32m+[m[32m          // Add remaining tracks in chunks[m
+[32m+[m[32m          for (let i = 1; i < trackChunks.length; i++) {[m
+[32m+[m[32m            await fetch(`https://api.music.apple.com/v1/me/library/playlists/${playlistId}/tracks`, {[m
+[32m+[m[32m              method: 'POST',[m
+[32m+[m[32m              headers: {[m
+[32m+[m[32m                Authorization: `Bearer ${developerToken}`,[m
+[32m+[m[32m                'Music-User-Token': userToken,[m
+[32m+[m[32m                'Content-Type': 'application/json',[m
+[32m+[m[32m              },[m
+[32m+[m[32m              body: JSON.stringify({[m
+[32m+[m[32m                data: trackChunks[i].map((id) => ({ id, type: 'songs' })),[m
+[32m+[m[32m              }),[m
+[32m+[m[32m            });[m
+[32m+[m[32m          }[m
+[32m+[m
+[32m+[m[32m          let message = `Playlist "${playlistName}" created in Apple Music with ${appleTrackIds.length} track(s)!`;[m
+[32m+[m[32m          if (notFoundTracks.length > 0) {[m
+[32m+[m[32m            message += `\n${notFoundTracks.length} track(s) could not be found in Apple Music.`;[m
+[32m+[m[32m          }[m
+[32m+[m[41m          [m
+[32m+[m[32m          return { success: true, message };[m
+[32m+[m[32m        } catch (error) {[m
+[32m+[m[32m          if (retryCount === maxRetries - 1) throw error;[m
+[32m+[m[32m          retryCount++;[m
+[32m+[m[32m          await new Promise(resolve => setTimeout(resolve, 2000));[m
+[32m+[m[32m        }[m
+       }[m
+   [m
+[31m-      return {[m
+[31m-        success: true,[m
+[31m-        message: `Playlist "${playlistName}" created in Apple Music with ${appleTrackIds.length} track(s)!`,[m
+[31m-      };[m
+[32m+[m[32m      throw new Error('Failed to create playlist after multiple retries');[m
+     } catch (error: unknown) {[m
+       console.error('[MusicBridge] Error transferring to Apple Music:', error);[m
+       const errorMessage = error instanceof Error ? error.message : 'An error occurred during transfer.';[m
+[1mdiff --git a/src/lib/transferHistory.ts b/src/lib/transferHistory.ts[m
+[1mindex 3698bd0..e7908f3 100644[m
+[1m--- a/src/lib/transferHistory.ts[m
+[1m+++ b/src/lib/transferHistory.ts[m
+[36m@@ -1,5 +1,5 @@[m
+ import { db } from '@/lib/firebase';[m
+[31m-import { collection, addDoc, query, where, getDocs, deleteDoc } from 'firebase/firestore';[m
+[32m+[m[32mimport { collection, addDoc, query, where, getDocs, deleteDoc, Timestamp } from 'firebase/firestore';[m
+ [m
+ export type TransferHistory = {[m
+   id?: string; // Firestore document ID[m
+[36m@@ -21,7 +21,7 @@[m [mexport const addTransferToHistory = async (transferDetails: Omit<TransferHistory[m
+     const timestamp = transferDetails.timestamp || new Date();[m
+     await addDoc(transferHistoriesCollection, {[m
+       ...transferDetails,[m
+[31m-      timestamp,[m
+[32m+[m[32m      timestamp: Timestamp.fromDate(timestamp), // Convert Date to Firestore Timestamp[m
+     });[m
+   } catch (error) {[m
+     console.error('Error adding transfer to history:', error);[m
+[36m@@ -34,7 +34,6 @@[m [mexport const getTransferHistory = async (userId: string): Promise<TransferHistor[m
+     const querySnapshot = await getDocs(q);[m
+     const history: TransferHistory[] = [];[m
+     querySnapshot.forEach((doc) => {[m
+[31m-      // doc.data() is never undefined for query doc snapshots[m
+       const data = doc.data();[m
+       history.push({[m
+         id: doc.id,[m
+[36m@@ -44,7 +43,7 @@[m [mexport const getTransferHistory = async (userId: string): Promise<TransferHistor[m
+         sourcePlaylistName: data.sourcePlaylistName,[m
+         destinationPlaylistName: data.destinationPlaylistName,[m
+         status: data.status,[m
+[31m-        timestamp: data.timestamp.toDate(), // Convert Firestore Timestamp to Date[m
+[32m+[m[32m        timestamp: data.timestamp instanceof Timestamp ? data.timestamp.toDate() : new Date(data.timestamp), // Handle both Timestamp and Date[m
+         trackCount: data.trackCount,[m
+         errorMessage: data.errorMessage,[m
+       });[m

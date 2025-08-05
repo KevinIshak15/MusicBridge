@@ -15,7 +15,7 @@ export function useAuthRedirect() {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
-      setLoading(false);
+        setLoading(false);
     });
 
     return () => unsubscribe();

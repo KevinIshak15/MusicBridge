@@ -16,19 +16,19 @@ export async function GET(req: NextRequest) {
 
   try {
     const response = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
         Authorization: `Basic ${Buffer.from(
           `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
         ).toString('base64')}`,
-      },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        code,
+    },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      code,
         redirect_uri: process.env.SPOTIFY_REDIRECT_URI!,
       }),
-    });
+  });
 
     if (!response.ok) {
       throw new Error('Failed to get access token');
