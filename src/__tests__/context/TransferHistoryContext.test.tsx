@@ -332,29 +332,15 @@ describe('TransferHistoryContext', () => {
   })
 
   it('handles fetchHistory called with null user parameter', async () => {
-    // This test specifically targets the early return in fetchHistory
-    // We need to access the fetchHistory function directly
-    let fetchHistoryFunction: ((user: User) => Promise<void>) | null = null
-    
     // Mock auth state change to return a user
     mockOnAuthStateChanged.mockImplementation((callback) => {
       callback(mockUser)
       return jest.fn() // Return unsubscribe function
     })
 
-    // Create a test component that exposes the fetchHistory function
+    // Create a test component that tests the context behavior
     const TestComponentWithFetch = () => {
       const { refreshHistory } = useTransferHistory()
-      
-      // Store the fetchHistory function for testing
-      React.useEffect(() => {
-        // Access the internal fetchHistory through the provider
-        const provider = document.querySelector('[data-testid="provider"]')
-        if (provider) {
-          // This is a workaround to test the internal function
-          // In a real scenario, you might expose this for testing
-        }
-      }, [])
       
       return (
         <div data-testid="provider">
@@ -374,8 +360,7 @@ describe('TransferHistoryContext', () => {
       expect(screen.getByTestId('provider')).toBeInTheDocument()
     })
 
-    // The fetchHistory function is internal, so we can't directly test it
-    // But we can verify that the context works correctly with null user scenarios
+    // Verify that the context works correctly with user scenarios
     expect(mockGetTransferHistory).toHaveBeenCalledWith('test-user-id')
   })
 
