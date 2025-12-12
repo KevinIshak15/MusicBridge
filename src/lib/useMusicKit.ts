@@ -32,26 +32,50 @@ declare global {
 
 export function useMusicKit() {
   const [music, setMusic] = useState<BasicMusicKit | null>(null); // Use the basic interface or null
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const developerToken = process.env.NEXT_PUBLIC_APPLE_MUSIC_TOKEN;
 
     if (!developerToken) {
       console.error('Apple Music token is missing in .env.local');
+      setError('Apple Music developer token is missing. Please check your environment variables.');
       return;
     }
 
     const configure = () => {
-      // Type assertion for window.MusicKit to ensure it matches our interface
-      (window.MusicKit as BasicMusicKit).configure({
-        developerToken,
-        app: {
-          name: 'MusicBridge',
-          build: '1.0.0',
-        },
-      });
-      setMusic((window.MusicKit as BasicMusicKit).getInstance());
+      try {
+        // Type assertion for window.MusicKit to ensure it matches our interface
+        (window.MusicKit as BasicMusicKit).configure({
+          developerToken,
+          app: {
+            name: 'MusicBridge',
+            build: '1.0.0',
+          },
+        });
+        setMusic((window.MusicKit as BasicMusicKit).getInstance());
+        setError(null); // Clear any previous errors
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        console.error('[MusicBridge] Error configuring MusicKit:', errorMessage);
+        
+        if (errorMessage.includes('expired') || errorMessage.includes('token')) {
+          setError('expired');
+        } else {
+          setError(errorMessage);
+        }
+      }
     };
+
+    // Add global error handler for MusicKit initialization errors
+    const handleMusicKitError = (event: ErrorEvent) => {
+      if (event.message && (event.message.includes('expired') || event.message.includes('token'))) {
+        console.error('[MusicBridge] MusicKit initialization error:', event.message);
+        setError('expired');
+      }
+    };
+
+    window.addEventListener('error', handleMusicKitError);
 
     if (window.MusicKit) {
       configure();
@@ -60,9 +84,16 @@ export function useMusicKit() {
       script.src = 'https://js-cdn.music.apple.com/musickit/v1/musickit.js';
       script.async = true;
       script.onload = configure;
+      script.onerror = () => {
+        setError('Failed to load MusicKit library. Please check your internet connection.');
+      };
       document.body.appendChild(script);
     }
+
+    return () => {
+      window.removeEventListener('error', handleMusicKitError);
+    };
   }, []);
 
-  return music;
+  return { music, error };
 }

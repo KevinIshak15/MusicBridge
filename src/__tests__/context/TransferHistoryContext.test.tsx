@@ -1,5 +1,6 @@
 import React from 'react'
 import { render, screen, waitFor, act } from '@testing-library/react'
+import '@testing-library/jest-dom'
 import { TransferHistoryProvider, useTransferHistory } from '../../context/TransferHistoryContext'
 import { getTransferHistory } from '../../lib/transferHistory'
 import { auth } from '../../lib/firebase'
@@ -13,7 +14,10 @@ jest.mock('../../lib/transferHistory', () => ({
 // Mock Firebase auth
 jest.mock('../../lib/firebase', () => ({
   auth: {
-    onAuthStateChanged: jest.fn(),
+    onAuthStateChanged: jest.fn((callback: (user: any) => void) => {
+      // Return unsubscribe function
+      return jest.fn();
+    }),
   },
 }))
 
@@ -72,7 +76,9 @@ const TestComponent = () => {
 
 describe('TransferHistoryContext', () => {
   const mockGetTransferHistory = getTransferHistory as jest.MockedFunction<typeof getTransferHistory>
-  const mockOnAuthStateChanged = auth.onAuthStateChanged as jest.MockedFunction<typeof auth.onAuthStateChanged>
+  const mockOnAuthStateChanged = auth.onAuthStateChanged as jest.MockedFunction<
+    (callback: (user: User | null) => void) => () => void
+  >
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -81,7 +87,7 @@ describe('TransferHistoryContext', () => {
 
   it('provides initial loading state', async () => {
     // Mock auth state change to return null (no user)
-    mockOnAuthStateChanged.mockImplementation((callback) => {
+    mockOnAuthStateChanged.mockImplementation((callback: (user: User | null) => void) => {
       callback(null)
       return jest.fn() // Return unsubscribe function
     })
@@ -102,7 +108,7 @@ describe('TransferHistoryContext', () => {
 
   it('loads transfer history when user is authenticated', async () => {
     // Mock auth state change to return a user
-    mockOnAuthStateChanged.mockImplementation((callback) => {
+    mockOnAuthStateChanged.mockImplementation((callback: (user: User | null) => void) => {
       callback(mockUser)
       return jest.fn() // Return unsubscribe function
     })
@@ -133,7 +139,7 @@ describe('TransferHistoryContext', () => {
     let authCallback: ((user: User | null) => void) | null = null
     
     // Mock auth state change
-    mockOnAuthStateChanged.mockImplementation((callback) => {
+    mockOnAuthStateChanged.mockImplementation((callback: (user: User | null) => void) => {
       authCallback = callback
       return jest.fn() // Return unsubscribe function
     })
@@ -176,7 +182,7 @@ describe('TransferHistoryContext', () => {
 
   it('handles refresh history functionality', async () => {
     // Mock auth state change to return a user
-    mockOnAuthStateChanged.mockImplementation((callback) => {
+    mockOnAuthStateChanged.mockImplementation((callback: (user: User | null) => void) => {
       callback(mockUser)
       return jest.fn() // Return unsubscribe function
     })
@@ -234,7 +240,7 @@ describe('TransferHistoryContext', () => {
 
   it('handles errors when fetching history', async () => {
     // Mock auth state change to return a user
-    mockOnAuthStateChanged.mockImplementation((callback) => {
+    mockOnAuthStateChanged.mockImplementation((callback: (user: User | null) => void) => {
       callback(mockUser)
       return jest.fn() // Return unsubscribe function
     })
@@ -262,7 +268,7 @@ describe('TransferHistoryContext', () => {
 
   it('calls getTransferHistory with correct user ID', async () => {
     // Mock auth state change to return a user
-    mockOnAuthStateChanged.mockImplementation((callback) => {
+    mockOnAuthStateChanged.mockImplementation((callback: (user: User | null) => void) => {
       callback(mockUser)
       return jest.fn() // Return unsubscribe function
     })
@@ -308,7 +314,7 @@ describe('TransferHistoryContext', () => {
 
   it('handles fetchHistory with null user', async () => {
     // Mock auth state change to return a user
-    mockOnAuthStateChanged.mockImplementation((callback) => {
+    mockOnAuthStateChanged.mockImplementation((callback: (user: User | null) => void) => {
       callback(mockUser)
       return jest.fn() // Return unsubscribe function
     })
@@ -333,7 +339,7 @@ describe('TransferHistoryContext', () => {
 
   it('handles fetchHistory called with null user parameter', async () => {
     // Mock auth state change to return a user
-    mockOnAuthStateChanged.mockImplementation((callback) => {
+    mockOnAuthStateChanged.mockImplementation((callback: (user: User | null) => void) => {
       callback(mockUser)
       return jest.fn() // Return unsubscribe function
     })
@@ -366,7 +372,7 @@ describe('TransferHistoryContext', () => {
 
   it('handles refreshHistory with no current user', async () => {
     // Mock auth state change to return null (no user)
-    mockOnAuthStateChanged.mockImplementation((callback) => {
+    mockOnAuthStateChanged.mockImplementation((callback: (user: User | null) => void) => {
       callback(null)
       return jest.fn() // Return unsubscribe function
     })
