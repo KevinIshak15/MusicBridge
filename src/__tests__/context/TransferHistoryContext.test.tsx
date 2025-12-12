@@ -14,7 +14,7 @@ jest.mock('../../lib/transferHistory', () => ({
 // Mock Firebase auth
 jest.mock('../../lib/firebase', () => ({
   auth: {
-    onAuthStateChanged: jest.fn((callback: (user: any) => void) => {
+    onAuthStateChanged: jest.fn(() => {
       // Return unsubscribe function
       return jest.fn();
     }),

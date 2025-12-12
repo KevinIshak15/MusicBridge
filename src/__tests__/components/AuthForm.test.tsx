@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import AuthForm from '../../components/AuthForm'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth'
@@ -35,10 +35,10 @@ jest.mock('react-hot-toast', () => ({
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div {...props}>{children}</div>,
+    button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
   },
-  AnimatePresence: ({ children }: any) => <div>{children}</div>,
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
 // Mock Firebase lib
@@ -50,7 +50,12 @@ jest.mock('../../lib/firebase', () => ({
 describe('AuthForm', () => {
   const mockSignIn = signInWithEmailAndPassword as jest.MockedFunction<typeof signInWithEmailAndPassword>
   const mockCreateUser = createUserWithEmailAndPassword as jest.MockedFunction<typeof createUserWithEmailAndPassword>
-  const mockToast = require('react-hot-toast')
+  
+  // Get mocked toast functions
+  const mockToast = jest.requireMock('react-hot-toast') as {
+    success: jest.MockedFunction<(message: string) => void>
+    error: jest.MockedFunction<(message: string) => void>
+  }
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -123,7 +128,7 @@ describe('AuthForm', () => {
   describe('Login Functionality', () => {
     it('handles successful login', async () => {
       const user = userEvent.setup()
-      mockSignIn.mockResolvedValueOnce({} as any)
+      mockSignIn.mockResolvedValueOnce({} as { user: { uid: string; email: string | null } })
       
       render(<AuthForm />)
       
@@ -168,7 +173,7 @@ describe('AuthForm', () => {
   describe('Signup Functionality', () => {
     it('handles successful signup', async () => {
       const user = userEvent.setup()
-      mockCreateUser.mockResolvedValueOnce({} as any)
+      mockCreateUser.mockResolvedValueOnce({} as { user: { uid: string; email: string | null } })
       
       render(<AuthForm />)
       
